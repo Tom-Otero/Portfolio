@@ -36,7 +36,8 @@ Args:
 """
 
 import os
-import sys
+import argparse
+
 
 
 def check_path(path: str) -> bool:
@@ -56,11 +57,26 @@ def move_files(): ...
 def dry_run(): ...
 
 
+def make_argparser():
+  parser = argparse.ArgumentParser
+  parser.add_argument("--source", "-s", type=str, required=True)
+  parser.add_argument("--target", "-t", type=str, required=True)
+  parser.add_argument("--dry_run", type=bool, required=False)
+  parser.add_argument("--logger", "-l", type=str, required=False)
+  return parser
+
+
 """ Main """
+def run(args: argparse.Namespace):
+  print(f'Source: {args.source}')
+  print(f'Target: {args.target}')
 
 
-def main(): ...
-
+def main():
+   parser = make_argparser()
+   args = parser.parse_args()
+   print(f'Source: {args.source}')
+   print(f'Target: {args.target}')
 
 if __name__ == "__main__":
     main()
