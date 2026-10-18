@@ -3,7 +3,7 @@
 <template class="Resume">
   <h1>Tom Otero</h1>
   <p>
-    Los Angeles, CA · tomotero1984@gmail.com · (503) 927‑0633 ·
+    Gainesville, FL · tomotero1984@gmail.com · (503) 927‑0633 ·
     linkedin.com/in/tomotero1984
   </p>
 
@@ -38,6 +38,28 @@
         dependency graph (including Abseil, Protobuf, Flatbuffers, and
         SentencePiece), ensuring hermetic build lifecycles independent of host
         environments.
+      </li>
+      <li>
+        Executed critical incident response to excise exposed sensitive data via
+        git filter-repo, subsequently resolving Google3-to-GitHub synchronization
+        failures by applying targeted hard resets to realign the external repository
+        with the internal Piper state.
+      </li>
+      <li>
+        Architected and deployed an automated GitHub Actions CI/CD pipeline
+        integrated with internal Piper-to-GitHub Copybara workflows, establishing automated pre-submit verification,
+        reproducible CMake builds, and streamlined release artifact generation.
+      </li>
+      <li>
+        Engineered an automated end-to-end (E2E) testing suite utilizing Pytest to execute functional validation and GPU
+        backend inference benchmarks, ensuring software integrity and runtime performance
+        across target deployment environments.
+      </li>
+      <li>
+        Orchestrated the migration of the CI/CD execution
+        environment from standard GitHub-hosted runners to high-performance, self-hosted runner infrastructure,
+        integrating Google Cloud Storage (GCS) for optimized dependency caching, persistent artifact storage, and secure
+        build pipeline execution.
       </li>
       <li>
         Developed a sophisticated re-integration strategy utilizing aggregate
@@ -198,12 +220,14 @@ h1 {
   margin: 0px;
   text-align: center;
 }
+
 .contact {
   margin: 0px;
   font-size: 14px;
   color: #666;
   text-align: center;
 }
+
 .address {
   margin: 0;
   padding: 0;
@@ -212,10 +236,12 @@ h1 {
   color: #888;
   text-align: center;
 }
+
 .line {
   border-top: 0;
   border-bottom: 2px solid #ddd;
 }
+
 h2 {
   font-size: 22px;
   color: #444;
@@ -228,25 +254,31 @@ ul {
   padding-left: 20px;
   margin-top: 10px;
 }
+
 li {
   margin-bottom: 8px;
 }
+
 .section {
   margin-bottom: 30px;
 }
+
 .subhead {
   font-weight: bold;
   font-size: 16px;
   margin-top: 20px;
 }
+
 .date-loc {
   font-size: 13px;
   color: #888;
 }
+
 .project-title {
   font-weight: bold;
   margin-top: 15px;
 }
+
 pre {
   white-space: pre-wrap;
   font-family: inherit;
