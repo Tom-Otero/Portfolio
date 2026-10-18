@@ -15,3 +15,5 @@ portfolio.sublime-**
 __pycache__
 pyfolio.egg*
 .zed
+ssh
+*.code-workspace
