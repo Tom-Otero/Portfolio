@@ -19,7 +19,9 @@ function menuButton (){
 
 <template>
   <header class="navbar">
-    <button class="nav" @click="router.push('/')">HOME</button>
+    <button type="button" class="nav-icon-btn" @click="router.push('/')" aria-label="Home">
+      <HomeIcon class="icon" />
+    </button>
     <MiniEngine/>
     <button ref="menuButtonRef" @click=menuButton() class="menu-button">MENU</button>
     <TerminalMenu
@@ -34,7 +36,7 @@ function menuButton (){
 .navbar {
   position: sticky;
   display: grid;
-  grid-template-columns: minmax(100px, 1fr) auto auto;
+  grid-template-columns: minmax(100px, 1fr) auto;
   top: 0;
   left: 0;
   z-index: 50;
@@ -48,7 +50,34 @@ function menuButton (){
   gap: 1em;
 }
 
+.nav-icon-btn {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 60;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gruvbox-green, #b8bb26);
+}
+.icon {
+  width: 24px;
+  height: 24px;
+  color: #6b7280;
+  display: block;
+}
+.icon:hover {
+  color: #111827;
+}
+
 MiniEngine {
+  grid-row: 1;
+  grid-column: 1;
   position:relative;
   display: flex;
   width: 100%;
@@ -58,11 +87,12 @@ MiniEngine {
   align-self: center;
 }
  TerminalMenu {
-   grid-column: 2;
+   grid-row: 2;
  }
 
 .menu-button {
-  grid-column: 3;
+  grid-row: 1;
+  grid-column: 2;
   position: relative;
   margin-right: 2rem;
   width: 60px;
@@ -93,26 +123,3 @@ MiniEngine {
 }
 
 </style>
-
-<!--/* Show desktop nav on large screens */-->
-<!--@media (min-width: 768px) {-->
-<!--.desktop-nav {-->
-<!--display: block;-->
-<!--}-->
-<!--.menu-button,-->
-<!--.mobile-nav {-->
-<!--display: none;-->
-<!--}-->
-<!--}-->
-
-<!--.mobile-nav {-->
-<!--position: absolute;-->
-<!--top: 100%;-->
-<!--left: 0;-->
-<!--right: 0;-->
-<!--background: var(&#45;&#45;accent);-->
-<!--color: var(&#45;&#45;gruvbox-bg-light);-->
-<!--box-shadow: 0 4px 10px -4px var(&#45;&#45;monokai-pink);-->
-<!--padding: 1rem;-->
-<!--z-index: 30;-->
-<!--}-->
