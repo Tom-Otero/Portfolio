@@ -35,7 +35,6 @@ watch(output, async () => {
   }
 })
 
-
 const command = ref('')
 const terminalRef = ref<HTMLDivElement | null>(null)
 

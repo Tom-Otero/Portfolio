@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router';
+import { HomeIcon } from '@heroicons/vue/24/solid'
 import MiniEngine from "@/components/MiniEngine/MiniEngine.vue";
 import NavLinks from "@/components/NavLinks.vue";
 import TerminalMenu from "@/components/TerminalMenu.vue";
+
+const router = useRouter()
 
 const visible = ref(false);
 const menuButtonRef = ref<HTMLElement | null>(null)
@@ -15,6 +19,7 @@ function menuButton (){
 
 <template>
   <header class="navbar">
+    <button class="nav" @click="router.push('/')">HOME</button>
     <MiniEngine/>
     <button ref="menuButtonRef" @click=menuButton() class="menu-button">MENU</button>
     <TerminalMenu
@@ -76,9 +81,6 @@ MiniEngine {
   background: var(--monokai-pink);
   border: 4px inset var(--monokai-purple);
 }
-
-
-
 
 @media (max-width: 700px) {
   .header-content {

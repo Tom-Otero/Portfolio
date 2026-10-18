@@ -30,9 +30,6 @@ export function CreateWorld(
   return { canvas, ctx, canvasSize, engine, world };
 }
 
-
-
-
 export function CreateColliders(
   { world, canvas }: {
     world: World, canvas: HTMLCanvasElement
@@ -72,7 +69,6 @@ export function CreateColliders(
 
   return { ground, actor }
 }
-
 
 export function AnimationLoop(
   {
