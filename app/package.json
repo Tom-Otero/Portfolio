@@ -13,6 +13,7 @@
     "docker-up": "docker-compose --file ~/web/apps/dev/Portfolio/app/docker-compose.yaml up --detach"
   },
   "dependencies": {
+    "@heroicons/vue": "^2.2.0",
     "@types/matter-js": "^0.19.8",
     "core-js": "^3.8.3",
     "markdown-it": "^14.1.0",
