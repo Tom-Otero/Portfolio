@@ -24,9 +24,9 @@ onMounted(() => {
   "navbar"
   "main"
   "footer";
-
 ;
 }
+
 NavBar {
   max-height: 10%;
 }

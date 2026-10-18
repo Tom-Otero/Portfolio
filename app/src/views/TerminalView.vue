@@ -1,36 +1,56 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted, onBeforeUnmount, ref } from 'vue'
+import V86 from "@/assets/v86/build/libv86.mjs"
+import ContentCard from "@/components/ContentCard.vue"
+import { useV86Preload } from '@/composables/useV86Preload'
 
-import V86 from "@/assets/v86/build/libv86.mjs";
-
-
-import wasmURL from "@/assets/v86/build/v86.wasm?url";
-import biosURL from "@/assets/v86/bios/seabios.bin?url";
-import vgaBiosURL from "@/assets/v86/bios/vgabios.bin?url";
-import ContentCard from "@/components/ContentCard.vue";
-
-const bzimageURL = "/bzimage.bin";
-const initrdURL = "/initrd";
-
+const { preloadedBuffers, assetUrls, preloadState } = useV86Preload()
+let emulator: any = null
 
 onMounted(() => {
-  console.log("mounted");
-  var emulator = new V86({
-    wasm_path: wasmURL,
+  const container = document.getElementById("screen_container")
+  if (!container) return
+
+  // Resolve configuration: use ArrayBuffer if cached, otherwise fall back to standard URL
+  const biosConfig = preloadedBuffers.has(assetUrls.biosURL)
+    ? { buffer: preloadedBuffers.get(assetUrls.biosURL) }
+    : { url: assetUrls.biosURL }
+
+  const vgaBiosConfig = preloadedBuffers.has(assetUrls.vgaBiosURL)
+    ? { buffer: preloadedBuffers.get(assetUrls.vgaBiosURL) }
+    : { url: assetUrls.vgaBiosURL }
+
+  const bzimageConfig = preloadedBuffers.has(assetUrls.bzimageURL)
+    ? { buffer: preloadedBuffers.get(assetUrls.bzimageURL) }
+    : { url: assetUrls.bzimageURL }
+
+  const initrdConfig = preloadedBuffers.has(assetUrls.initrdURL)
+    ? { buffer: preloadedBuffers.get(assetUrls.initrdURL) }
+    : { url: assetUrls.initrdURL }
+
+  emulator = new V86({
+    wasm_path: assetUrls.wasmURL,
     memory_size: 512 * 1024 * 1024,
     vga_memory_size: 8 * 1024 * 1024,
-    screen_container: document.getElementById("screen_container"),
-    bios: { url: biosURL },
-    vga_bios: { url: vgaBiosURL },
-
-    bzimage: { url: bzimageURL, },
-    initrd: { url: initrdURL },
-    cmdline: "rw root=/dev/ram init=/init, rdinit=/bin/sh",
+    screen_container: container,
+    bios: biosConfig,
+    vga_bios: vgaBiosConfig,
+    bzimage: bzimageConfig,
+    initrd: initrdConfig,
+    cmdline: "rw root=/dev/ram init=/init rdinit=/bin/sh",
     autostart: true,
-  });
-});
+  })
+})
 
+onBeforeUnmount(() => {
+  // Always destroy emulator instance on navigation to release ~520MB allocated RAM
+  if (emulator && typeof emulator.destroy === 'function') {
+    emulator.destroy()
+    emulator = null
+  }
+})
 </script>
+
 <template>
   <section class="terminal">
     <div class="terminal-header">
@@ -41,16 +61,13 @@ onMounted(() => {
         entirely in your browser.
       </p>
     </div>
-    <!--    <hr>-->
-    <!--    <br><br>-->
+    
     <ContentCard class="terminal-content">
       <div id="screen_container">
         <div style="white-space: pre; font: 14px monospace; line-height: 14px">If you see this, try refreshing...</div>
         <canvas style="display: none">If you see this, try refreshing...</canvas>
       </div>
     </ContentCard>
-    <!--    <br><br>-->
-    <!--    <hr>-->
 
     <div class="credits">
       <h4 style="padding-bottom: 0; margin-bottom: 0;">Credits:</h4>
