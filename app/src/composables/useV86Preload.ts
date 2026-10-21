@@ -1,8 +1,8 @@
 import { ref } from 'vue'
-import wasmURL from '@/assets/v86/build/v86.wasm?url'
-import biosURL from '@/assets/v86/bios/seabios.bin?url'
-import vgaBiosURL from '@/assets/v86/bios/vgabios.bin?url'
 
+const wasmURL = '/v86/build/v86.wasm'
+const biosURL = '/v86/bios/seabios.bin'
+const vgaBiosURL = '/v86/bios/vgabios.bin'
 const bzimageURL = '/bzimage.bin'
 const initrdURL = '/initrd'
 
