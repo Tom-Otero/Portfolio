@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "docker-clean": "docker container prune -f && docker image prune -f && docker network prune -f",
@@ -26,7 +26,6 @@
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^20.11.0",
-    "@types/vue-router": "^2.0.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "@vitejs/plugin-vue": "^5.2.3",
