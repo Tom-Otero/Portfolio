@@ -4,6 +4,7 @@ import ContentCard from "@/components/ContentCard.vue"
 
 const iframeRef = ref<HTMLIFrameElement | null>(null)
 const isPaused = ref(false)
+const isPoweredOn = ref(false)
 
 // Define the exact contract your component expects from the iframe
 interface V86Instance {
@@ -21,7 +22,17 @@ interface V86Window extends Window {
 function getEmulator(): V86Instance | undefined {
   return (iframeRef.value?.contentWindow as V86Window | null)?.emulator;
 }
+
+function togglePower() {
+  isPoweredOn.value = !isPoweredOn.value;
+  if (!isPoweredOn.value) {
+    // Reset pause state when powering down
+    isPaused.value = false;
+  }
+}
+
 function togglePause() {
+  if (!isPoweredOn.value) return;
   const emu = getEmulator();
   if (!emu) return;
 
@@ -35,13 +46,19 @@ function togglePause() {
 }
 
 function handleReboot() {
-  if (iframeRef.value && iframeRef.value.contentWindow) {
+  if (isPoweredOn.value && iframeRef.value && iframeRef.value.contentWindow) {
     // Cold reboot: Reload the iframe completely
     iframeRef.value.contentWindow.location.reload();
     isPaused.value = false;
   }
 }
 
+function focusIframe() {
+  if (iframeRef.value) {
+    // This focuses the iframe element itself so keystrokes route into the sandbox
+    iframeRef.value.focus();
+  }
+}
 </script>
 
 <template>
@@ -54,28 +71,52 @@ function handleReboot() {
       </p>
 
       <div class="terminal-controls">
-        <span class="status-indicator" :class="{ paused: isPaused }">
-          ● {{ isPaused ? 'PAUSED' : 'RUNNING' }}
+        <span class="status-indicator" :class="{ paused: isPaused, off: !isPoweredOn }">
+          ● {{ !isPoweredOn ? 'OFF' : isPaused ? 'PAUSED' : 'RUNNING' }}
         </span>
 
-        <button type="button" class="ctrl-btn" @click="togglePause()">
+        <button type="button" class="ctrl-btn" @click="togglePower()">
+          ⏻
+          <!-- {{ isPoweredOn ? 'Power Off' : 'Power On' }} -->
+        </button>
+
+        <button 
+          type="button" 
+          class="ctrl-btn" 
+          @click="togglePause()"
+          :disabled="!isPoweredOn"
+        >
           {{ isPaused ? 'Resume' : 'Pause' }}
         </button>
 
-        <button type="button" class="ctrl-btn" @click="handleReboot()">
+        <button 
+          type="button" 
+          class="ctrl-btn" 
+          @click="handleReboot()"
+          :disabled="!isPoweredOn"
+        >
           Reboot
         </button>
       </div>
     </div>
 
     <ContentCard class="terminal-content">
-      <!-- The sandbox isolates the memory leak and event listeners -->
+      <!-- Placeholder shown when the emulator is powered down -->
+      <div v-if="!isPoweredOn" class="offline-screen">
+        <button class="power-on-btn" @click="togglePower()">
+          ⏻
+        </button>
+      </div>
+
+      <!-- The sandbox isolates the memory leak and defers the massive Wasm payload -->
       <iframe 
+        v-if="isPoweredOn"
         ref="iframeRef" 
         src="/linux-env.html" 
         class="v86-sandbox"
         frameborder="0"
         scrolling="no"
+        @load="focusIframe"
       ></iframe>
     </ContentCard>
 
@@ -97,9 +138,35 @@ function handleReboot() {
   height: 400px;
   background: var(--monokai-bg, #272822);
   border-radius: 4px;
+  display: block;
 }
 
-/* ... keep your existing button and control styles ... */
+.offline-screen {
+  width: 100%;
+  height: 400px;
+  background: var(--monokai-bg, #272822);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.power-on-btn {
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: bold;
+  padding: 1rem 2rem;
+  background: var(--gruvbox-bg, #282828);
+  color: var(--gruvbox-green, #b8bb26);
+  border: 2px outset var(--gruvbox-bg-light, #504945);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.power-on-btn:hover {
+  background: var(--gruvbox-bg-light, #504945);
+}
+
 .terminal-controls {
   display: flex;
   align-items: center;
@@ -124,6 +191,10 @@ function handleReboot() {
   color: var(--monokai-pink, #f92672);
 }
 
+.status-indicator.off {
+  color: #7c6f64; /* Gruvbox gray for offline state */
+}
+
 .ctrl-btn {
   font-family: monospace;
   font-size: 0.85rem;
@@ -133,5 +204,16 @@ function handleReboot() {
   color: var(--gruvbox-fg, #ebdbb2);
   border: 2px outset var(--gruvbox-bg-light, #504945);
   cursor: pointer;
+}
+
+.ctrl-btn:hover {
+  background: var(--gruvbox-bg-light, #504945);
+}
+
+.ctrl-btn:disabled {
+  color: #7c6f64;
+  border-style: solid;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 </style>
