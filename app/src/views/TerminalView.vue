@@ -1,54 +1,47 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref } from 'vue'
-import V86 from "@/assets/v86/build/libv86.mjs"
+import { ref } from 'vue'
 import ContentCard from "@/components/ContentCard.vue"
-import { useV86Preload } from '@/composables/useV86Preload'
 
-const { preloadedBuffers, assetUrls, preloadState } = useV86Preload()
-let emulator: any = null
+const iframeRef = ref<HTMLIFrameElement | null>(null)
+const isPaused = ref(false)
 
-onMounted(() => {
-  const container = document.getElementById("screen_container")
-  if (!container) return
+// Define the exact contract your component expects from the iframe
+interface V86Instance {
+  run: () => void;
+  stop: () => void;
+  restart: () => void;
+  destroy: () => void;
+}
 
-  // Resolve configuration: use ArrayBuffer if cached, otherwise fall back to standard URL
-  const biosConfig = preloadedBuffers.has(assetUrls.biosURL)
-    ? { buffer: preloadedBuffers.get(assetUrls.biosURL) }
-    : { url: assetUrls.biosURL }
+// Extend the native Window interface
+interface V86Window extends Window {
+  emulator?: V86Instance;
+}
 
-  const vgaBiosConfig = preloadedBuffers.has(assetUrls.vgaBiosURL)
-    ? { buffer: preloadedBuffers.get(assetUrls.vgaBiosURL) }
-    : { url: assetUrls.vgaBiosURL }
+function getEmulator(): V86Instance | undefined {
+  return (iframeRef.value?.contentWindow as V86Window | null)?.emulator;
+}
+function togglePause() {
+  const emu = getEmulator();
+  if (!emu) return;
 
-  const bzimageConfig = preloadedBuffers.has(assetUrls.bzimageURL)
-    ? { buffer: preloadedBuffers.get(assetUrls.bzimageURL) }
-    : { url: assetUrls.bzimageURL }
-
-  const initrdConfig = preloadedBuffers.has(assetUrls.initrdURL)
-    ? { buffer: preloadedBuffers.get(assetUrls.initrdURL) }
-    : { url: assetUrls.initrdURL }
-
-  emulator = new V86({
-    wasm_path: assetUrls.wasmURL,
-    memory_size: 512 * 1024 * 1024,
-    vga_memory_size: 8 * 1024 * 1024,
-    screen_container: container,
-    bios: biosConfig,
-    vga_bios: vgaBiosConfig,
-    bzimage: bzimageConfig,
-    initrd: initrdConfig,
-    cmdline: "rw root=/dev/ram init=/init rdinit=/bin/sh",
-    autostart: true,
-  })
-})
-
-onBeforeUnmount(() => {
-  // Always destroy emulator instance on navigation to release ~520MB allocated RAM
-  if (emulator && typeof emulator.destroy === 'function') {
-    emulator.destroy()
-    emulator = null
+  if (isPaused.value) {
+    emu.run();
+    isPaused.value = false;
+  } else {
+    emu.stop();
+    isPaused.value = true;
   }
-})
+}
+
+function handleReboot() {
+  if (iframeRef.value && iframeRef.value.contentWindow) {
+    // Cold reboot: Reload the iframe completely
+    iframeRef.value.contentWindow.location.reload();
+    isPaused.value = false;
+  }
+}
+
 </script>
 
 <template>
@@ -56,25 +49,42 @@ onBeforeUnmount(() => {
     <div class="terminal-header">
       <h1>Embedded Linux Kernel</h1>
       <p>
-        The application below is a fully functional Linux kernel running in the browser. This application is purely
-        client-side and does not communicate with any servers. As in, yes! You are currently running an operating system
-        entirely in your browser.
+        The application below is a fully functional Linux kernel running in the browser.
+        This instance runs client-side inside WebAssembly.
       </p>
-    </div>
-    
-    <ContentCard class="terminal-content">
-      <div id="screen_container">
-        <div style="white-space: pre; font: 14px monospace; line-height: 14px">If you see this, try refreshing...</div>
-        <canvas style="display: none">If you see this, try refreshing...</canvas>
+
+      <div class="terminal-controls">
+        <span class="status-indicator" :class="{ paused: isPaused }">
+          ● {{ isPaused ? 'PAUSED' : 'RUNNING' }}
+        </span>
+
+        <button type="button" class="ctrl-btn" @click="togglePause()">
+          {{ isPaused ? 'Resume' : 'Pause' }}
+        </button>
+
+        <button type="button" class="ctrl-btn" @click="handleReboot()">
+          Reboot
+        </button>
       </div>
+    </div>
+
+    <ContentCard class="terminal-content">
+      <!-- The sandbox isolates the memory leak and event listeners -->
+      <iframe 
+        ref="iframeRef" 
+        src="/linux-env.html" 
+        class="v86-sandbox"
+        frameborder="0"
+        scrolling="no"
+      ></iframe>
     </ContentCard>
 
     <div class="credits">
       <h4 style="padding-bottom: 0; margin-bottom: 0;">Credits:</h4>
       <ul>
         <li>
-          This application is made possible by the <a href="https://github.com/copy/v86">V86 emulator</a>, an
-          x86 PC emulator and x86-to-wasm JIT, running in the browser.
+          This application is made possible by the 
+          <a href="https://github.com/copy/v86" target="_blank" rel="noopener">V86 emulator</a>.
         </li>
       </ul>
     </div>
@@ -82,46 +92,46 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.terminal {
-  display: grid;
+.v86-sandbox {
+  width: 100%;
+  height: 400px;
+  background: var(--monokai-bg, #272822);
+  border-radius: 4px;
+}
+
+/* ... keep your existing button and control styles ... */
+.terminal-controls {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  grid-template-areas:
-    "terminal-header"
-    "terminal-content";
+  gap: 0.75rem;
+  margin: 1rem 0;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--gruvbox-green, #b8bb26);
+  border-radius: 4px;
+  width: fit-content;
 }
 
-.terminal-header {
-  grid-area: terminal-header;
-  max-width: 800px;
-  align-content: center;
-  justify-content: center;
-  text-align: left;
-  padding: 10px;
-}
-.terminal-header h1 {
-  text-align: center;
+.status-indicator {
+  font-family: monospace;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: var(--gruvbox-green, #b8bb26);
+  margin-right: 0.5rem;
 }
 
-.terminal-content {
-  grid-area: terminal-content;
-  max-width: 800px;
-  align-items: center;
-  align-content: center;
-  justify-items: center;
-  justify-content: center;
-  text-align: center;
+.status-indicator.paused {
+  color: var(--monokai-pink, #f92672);
 }
 
-#screen_container {
-  display: block;
-  background: black;
-  align-self: center;
-}
-
-hr {
-  width: 90%;
-  color: var(--gruvbox-green);
-  box-shadow: 0 0 10px var(--gruvbox-green);
+.ctrl-btn {
+  font-family: monospace;
+  font-size: 0.85rem;
+  font-weight: bold;
+  padding: 0.35rem 0.75rem;
+  background: var(--gruvbox-bg, #282828);
+  color: var(--gruvbox-fg, #ebdbb2);
+  border: 2px outset var(--gruvbox-bg-light, #504945);
+  cursor: pointer;
 }
 </style>

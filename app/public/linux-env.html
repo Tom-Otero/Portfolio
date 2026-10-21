@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    /* Match your portfolio's terminal aesthetic */
+    body { 
+      margin: 0; 
+      padding: 0;
+      background: transparent; 
+      color: #b8bb26; 
+      overflow: hidden; 
+    }
+    #screen_container { 
+      width: 100%; 
+      height: 100%; 
+    }
+  </style>
+  <!-- Load V86 statically -->
+  <script src="/v86/build/libv86.js"></script>
+</head>
+<body>
+  <div id="screen_container">
+    <div style="white-space: pre; font: 14px monospace; line-height: 14px"></div>
+    <canvas style="display: none"></canvas>
+  </div>
+
+  <script>
+    // Boot instantly when the iframe loads
+    window.onload = function() {
+      window.emulator = new V86({
+        wasm_path: "/v86/build/v86.wasm",
+        memory_size: 512 * 1024 * 1024,
+        vga_memory_size: 8 * 1024 * 1024,
+        screen_container: document.getElementById("screen_container"),
+        bios: { url: "/v86/bios/seabios.bin" },
+        vga_bios: { url: "/v86/bios/vgabios.bin" },
+        bzimage: { url: "/bzimage.bin" },
+        initrd: { url: "/initrd" },
+        cmdline: "rw root=/dev/ram init=/init rdinit=/bin/sh",
+        autostart: true,
+      });
+    };
+  </script>
+</body>
+</html>
