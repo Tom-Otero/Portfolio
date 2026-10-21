@@ -26,9 +26,8 @@
   </div>
 
   <script>
-    // Boot instantly when the iframe loads
     window.onload = function() {
-      window.emulator = new V86({
+      window.emulator = new V86Starter({
         wasm_path: "/v86/build/v86.wasm",
         memory_size: 512 * 1024 * 1024,
         vga_memory_size: 8 * 1024 * 1024,
@@ -39,6 +38,10 @@
         initrd: { url: "/initrd" },
         cmdline: "rw root=/dev/ram init=/init rdinit=/bin/sh",
         autostart: true,
+      });
+
+      document.addEventListener("mousedown", function() {
+        window.focus();
       });
     };
   </script>
