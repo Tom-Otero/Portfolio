@@ -26,7 +26,6 @@ function getEmulator(): V86Instance | undefined {
 function togglePower() {
   isPoweredOn.value = !isPoweredOn.value;
   if (!isPoweredOn.value) {
-    // Reset pause state when powering down
     isPaused.value = false;
   }
 }
@@ -47,7 +46,6 @@ function togglePause() {
 
 function handleReboot() {
   if (isPoweredOn.value && iframeRef.value && iframeRef.value.contentWindow) {
-    // Cold reboot: Reload the iframe completely
     iframeRef.value.contentWindow.location.reload();
     isPaused.value = false;
   }
@@ -55,7 +53,6 @@ function handleReboot() {
 
 function focusIframe() {
   if (iframeRef.value) {
-    // This focuses the iframe element itself so keystrokes route into the sandbox
     iframeRef.value.focus();
   }
 }
@@ -66,8 +63,9 @@ function focusIframe() {
     <div class="terminal-header">
       <h1>Embedded Linux Kernel</h1>
       <p>
-        The application below is a fully functional Linux kernel running in the browser.
-        This instance runs client-side inside WebAssembly.
+        The application below is a fully functional Linux kernel running in the browser. This application is purely
+        client-side and does not communicate with any servers. As in, yes! You are currently running an operating system
+        entirely in your browser.
       </p>
 
       <div class="terminal-controls">
@@ -101,19 +99,14 @@ function focusIframe() {
     </div>
 
     <ContentCard class="terminal-content">
-      <!-- Placeholder shown when the emulator is powered down -->
       <div v-if="!isPoweredOn" class="offline-screen">
         <button class="power-on-btn" @click="togglePower()">
           ⏻
         </button>
       </div>
-
-      <!-- The sandbox isolates the memory leak and defers the massive Wasm payload -->
-      <iframe 
-        v-if="isPoweredOn"
+      <iframe v-if="isPoweredOn" class="v86-sandbox"
         ref="iframeRef" 
         src="/linux-env.html" 
-        class="v86-sandbox"
         frameborder="0"
         scrolling="no"
         @load="focusIframe"
@@ -133,17 +126,50 @@ function focusIframe() {
 </template>
 
 <style scoped>
+.terminal {
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  grid-template-areas:
+    "terminal-header"
+    "terminal-content";
+}
+
+.terminal-header {
+  grid-area: terminal-header;
+  max-width: 800px;
+  align-content: center;
+  justify-content: center;
+  text-align: left;
+  padding: 10px;
+}
+.terminal-header h1 {
+  text-align: center;
+}
+
+.terminal-content {
+  grid-area: terminal-content;
+  max-width: 800px;
+  align-items: center;
+  align-content: center;
+  justify-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
 .v86-sandbox {
   width: 100%;
-  height: 400px;
+  height: 375px;
   background: var(--monokai-bg, #272822);
   border-radius: 4px;
   display: block;
+  align-items: center;
+  justify-content: center;
 }
 
 .offline-screen {
   width: 100%;
-  height: 400px;
+  height: 375px;
   background: var(--monokai-bg, #272822);
   border-radius: 4px;
   display: flex;

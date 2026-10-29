@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    /* Match your portfolio's terminal aesthetic */
     body { 
       margin: 0; 
       padding: 0;
@@ -13,15 +12,17 @@
     }
     #screen_container { 
       width: 100%; 
-      height: 100%; 
+      height: 100%;
+      display: block;
+      background: black;
+      align-self: center;
     }
   </style>
-  <!-- Load V86 statically -->
   <script src="/v86/build/libv86.js"></script>
 </head>
 <body>
   <div id="screen_container">
-    <div style="white-space: pre; font: 14px monospace; line-height: 14px"></div>
+    <div style="white-space: pre; font: 14px monospace; line-height: 15px"></div>
     <canvas style="display: none"></canvas>
   </div>
 
